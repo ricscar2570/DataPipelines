@@ -8,12 +8,12 @@ class StageToRedshiftOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 redshift_conn_id="",
-                 aws_credentials_id="",
-                 table="",
-                 s3_bucket="",
-                 s3_key="",
-                 json_format="auto",
+                 redshift_conn_id="redshift",
+                 aws_credentials_id="aws_credentials",
+                 table="staging_events",
+                 s3_bucket="ricscar2570",
+                 s3_key="log_json_path.json",
+                 json_format="s3://ricscar2570/log_json_path.json",
                  *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)

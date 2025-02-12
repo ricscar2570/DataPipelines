@@ -5,8 +5,13 @@ from airflow.operators.dummy import DummyOperator
 from operators import (StageToRedshiftOperator, LoadFactOperator,
                        LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
+from airflow.models import Variable
 
-# Default arguments
+# Recupera le credenziali AWS dalle variabili di Airflow
+aws_access_key_id = Variable.get("aws_access_key_id")
+aws_secret_access_key = Variable.get("aws_secret_access_key")
+
+# Argomenti di default
 default_args = {
     'owner': 'udacity',
     'start_date': pendulum.now(),
@@ -18,7 +23,6 @@ default_args = {
 }
 
 @dag(
-    dag_id='final_project',
     default_args=default_args,
     description='Load and transform data in Redshift with Airflow',
     schedule_interval='0 * * * *'
@@ -34,7 +38,8 @@ def final_project():
         table='staging_events',
         s3_bucket='ricscar2570',
         s3_key='log-data',
-        json_format='s3://ricscar2570/log_json_path.json'
+        json_format='s3://ricscar2570/log_json_path.json',
+        
     )
 
     stage_songs_to_redshift = StageToRedshiftOperator(
@@ -44,7 +49,8 @@ def final_project():
         table='staging_songs',
         s3_bucket='ricscar2570',
         s3_key='song-data',
-        json_format='auto'
+        json_format='auto',
+        
     )
 
     load_songplays_table = LoadFactOperator(
@@ -97,7 +103,7 @@ def final_project():
 
     stop_operator = DummyOperator(task_id='Stop_execution')
 
-    # DAG Dependencies
+    # Dipendenze del DAG
     start_operator >> [stage_events_to_redshift, stage_songs_to_redshift] >> load_songplays_table
     load_songplays_table >> [load_user_dimension_table, load_song_dimension_table, load_artist_dimension_table, load_time_dimension_table] >> run_quality_checks
     run_quality_checks >> stop_operator
