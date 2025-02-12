@@ -18,6 +18,7 @@ default_args = {
 }
 
 @dag(
+    dag_id='final_project',
     default_args=default_args,
     description='Load and transform data in Redshift with Airflow',
     schedule_interval='0 * * * *'
@@ -31,9 +32,9 @@ def final_project():
         redshift_conn_id='redshift',
         aws_credentials_id='aws_credentials',
         table='staging_events',
-        s3_bucket='your-bucket-name',
+        s3_bucket='ricscar2570',
         s3_key='log-data',
-        json_format='s3://your-bucket-name/log_json_path.json'
+        json_format='s3://ricscar2570/log_json_path.json'
     )
 
     stage_songs_to_redshift = StageToRedshiftOperator(
@@ -41,7 +42,7 @@ def final_project():
         redshift_conn_id='redshift',
         aws_credentials_id='aws_credentials',
         table='staging_songs',
-        s3_bucket='your-bucket-name',
+        s3_bucket='ricscar2570',
         s3_key='song-data',
         json_format='auto'
     )
