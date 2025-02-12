@@ -7,7 +7,7 @@ class DataQualityOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 redshift_conn_id="",
+                 redshift_conn_id="redshift",
                  sql_checks=[],
                  *args, **kwargs):
 

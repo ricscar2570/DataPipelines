@@ -7,7 +7,7 @@ class LoadFactOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 redshift_conn_id="",
+                 redshift_conn_id="redshift",
                  table="",
                  sql_query="",
                  *args, **kwargs):
