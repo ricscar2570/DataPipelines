@@ -6,6 +6,9 @@ from airflow.operators.dummy import DummyOperator
 from operators import (StageToRedshiftOperator, LoadFactOperator,
                        LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+import os
+
 
 default_args = {
     'owner': 'udacity',
@@ -28,9 +31,9 @@ def final_project():
 
     create_tables = PostgresOperator(
     task_id='create_tables',
-    postgres_conn_id='redshift_serverless',  # Usa la connessione creata in Airflow
+    postgres_conn_id='redshift',  # Usa la connessione creata in Airflow
     sql='/opt/airflow/dags/create_tables.sql',  # Percorso del file SQL
-    
+    )
 
     stage_events_to_redshift = StageToRedshiftOperator(
         task_id='Stage_events',
@@ -98,7 +101,8 @@ def final_project():
         tables=['songplays', 'users', 'songs', 'artists', 'time']
     )
 
-    start_operator >> [stage_events_to_redshift, stage_songs_to_redshift] 
+    start_operator >> create_tables
+    create_tables >> [stage_events_to_redshift, stage_songs_to_redshift] 
     [stage_events_to_redshift, stage_songs_to_redshift] >> load_songplays_table 
     load_songplays_table >> [load_user_dimension_table, load_song_dimension_table, load_artist_dimension_table, load_time_dimension_table] 
     [load_user_dimension_table, load_song_dimension_table, load_artist_dimension_table, load_time_dimension_table] >> run_quality_checks
