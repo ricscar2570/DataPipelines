@@ -32,7 +32,8 @@ def final_project():
     create_tables = PostgresOperator(
     task_id='create_tables',
     postgres_conn_id='redshift',  # Usa la connessione creata in Airflow
-    sql='/opt/airflow/dags/create_tables.sql',  # Percorso del file SQL
+    sql='create_tables.sql',  # Percorso del file SQL
+    split_statements=True
     )
 
     stage_events_to_redshift = StageToRedshiftOperator(
@@ -41,7 +42,7 @@ def final_project():
         aws_credentials_id='aws_credentials',
         table='staging_events',
         s3_bucket='ricscar2570',
-        s3_key='log_data',
+        s3_key='log-data',
         json_format='s3://ricscar2570/log_json_path.json'
     )
 
@@ -51,7 +52,7 @@ def final_project():
         aws_credentials_id='aws_credentials',
         table='staging_songs',
         s3_bucket='ricscar2570',
-        s3_key='song_data',
+        s3_key='song-data',
         json_format='auto'
     )
 

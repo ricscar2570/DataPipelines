@@ -29,7 +29,7 @@ class StageToRedshiftOperator(BaseOperator):
         copy_sql = f'''
             COPY {self.table}
             FROM '{s3_path}'
-            IAM_ROLE 'your-iam-role'
+            IAM_ROLE 'arn:aws:iam::133638015127:role/service-role/AmazonRedshift-CommandsAccessRole-20250210T194450'
             FORMAT AS JSON '{self.json_format}';
         '''
         self.log.info(f'Executing COPY command: {copy_sql}')
