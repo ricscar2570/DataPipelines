@@ -83,18 +83,6 @@ Or run it from the **Query Editor in Redshift**.
 In the Airflow UI, trigger the DAG:  
 📍 DAG Name: `final_project`
 
-## **🔄 Workflow Execution**  
-```mermaid
-gantt
-title ETL Pipeline Execution
-dateFormat  HH:mm\section Staging
-S3 to Redshift  :done, 10:00, 10min
-\section Transform & Load
-Load Fact Table  :active, 10:10, 15min
-Load Dimension Tables :active, 10:25, 10min
-\section Validation
-Data Quality Check  :active, 10:35, 5min
-```
 
 ## **📌 Data Model (Star Schema)**  
 ```mermaid
