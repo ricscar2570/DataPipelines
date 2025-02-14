@@ -1,191 +1,161 @@
-# 🎵 Sparkify Data Pipeline with Apache Airflow
-![Airflow](https://upload.wikimedia.org/wikipedia/commons/d/de/AirflowLogo.png)
+# **Data Pipelines with Apache Airflow & Amazon Redshift**  
 
-> **Automating an ETL pipeline with Apache Airflow, S3, and Redshift for music streaming data processing.**
+![Airflow Logo](https://upload.wikimedia.org/wikipedia/commons/d/de/AirflowLogo.png)  
 
----
+## **📌 Project Overview**  
+This project implements an **ETL (Extract, Transform, Load) data pipeline** using **Apache Airflow** to orchestrate data workflows and **Amazon Redshift** as the data warehouse.
 
-## 📜 Introduction
-Sparkify, a music streaming company, aims to **automate its data pipeline** for better user data analysis.  
-This project uses **Apache Airflow** to **orchestrate an ETL pipeline**, **Amazon S3** as the data source, and **Amazon Redshift** as the data warehouse.
+The pipeline:  
+- **Extracts** raw data from **Amazon S3**  
+- **Loads** it into staging tables in **Redshift**  
+- **Transforms** the data into fact and dimension tables for analytics  
+- **Validates** the data quality
 
----
-
-## 📌 Project Architecture
-
-```mermaid
-graph TD
-    subgraph S3 [Amazon S3]
-        A[Log Data JSON] -->|S3 Bucket| B[Stage Events Table]
-        A2[Song Data JSON] -->|S3 Bucket| B2[Stage Songs Table]
-    end
-
-    subgraph Redshift [Amazon Redshift]
-        B --> C[Fact Table: Songplays]
-        B2 --> C
-        C --> D[Dim: Users]
-        C --> E[Dim: Songs]
-        C --> F[Dim: Artists]
-        C --> G[Dim: Time]
-    end
-
-    subgraph Airflow [Apache Airflow DAG]
-        Start -->|Stage Data| B
-        Start -->|Stage Data| B2
-        B & B2 -->|Load Fact| C
-        C -->|Load Dimensions| D & E & F & G
-        D & E & F & G -->|Data Quality Check| QualityCheck
-        QualityCheck --> End
-    end
-```
-
-# 📂 Directory & Files
-```🛠️ Project Structure
-
-.
-├── dags/
-│   ├── final_project.py  # Main DAG definition
-├── plugins/
-│   ├── operators/
-│   │   ├── stage_redshift.py    # Staging data from S3 to Redshift
-│   │   ├── load_fact.py         # Loading fact table
-│   │   ├── load_dimension.py    # Loading dimension tables
-│   │   ├── data_quality.py      # Data quality checks
-│   ├── helpers/
-│   │   ├── sql_queries.py       # SQL queries for data transformation
-├── create_tables.sql            # SQL script for Redshift table creation
-├── docker-compose.yaml          # Local Airflow environment setup
-└── README.md
-```
-
-# ⚡ Apache Airflow DAG
-
-Graph View
-Task Dependencies
-
+## **📊 Pipeline Architecture**  
 ```mermaid
 graph TD;
-    A[Begin Execution] --> B[Stage Events]
-    A --> C[Stage Songs]
-    B --> D[Load Songplays Fact Table]
-    C --> D
-    D --> E[Load User Dimension]
-    D --> F[Load Song Dimension]
-    D --> G[Load Artist Dimension]
-    D --> H[Load Time Dimension]
-    E --> I[Run Data Quality Checks]
-    F --> I
-    G --> I
-    H --> I
-    I --> J[End Execution]
+    A[Amazon S3] -->|Stage Data| B[Staging Tables in Redshift];
+    B -->|Transform & Load| C[Fact Table - songplays];
+    B -->|Transform & Load| D[Dimension Tables: users, songs, artists, time];
+    C -->|Data Quality Check| E[Validation];
+    D -->|Data Quality Check| E;
+    E -->|Ready for Analysis| F[BI & Reporting];
 ```
 
-# 🛠️ Installation
+## **🛠️ Tech Stack**  
+✅ **Apache Airflow** - Orchestration  
+✅ **Amazon Redshift** - Data Warehouse  
+✅ **Amazon S3** - Data Storage  
+✅ **Docker** - Containerization  
+✅ **Python** - Data Processing  
+✅ **SQL** - Querying  
 
-🔹 Requirements
+## **📂 Project Structure**  
+```plaintext
+DataPipelines/
+│── airflow/
+│   ├── dags/
+│   │   ├── final_project.py  # DAG defining the workflow
+│   ├── plugins/
+│   │   ├── helpers/sql_queries.py  # SQL Queries for ETL
+│   │   ├── operators/
+│   │   │   ├── stage_redshift.py  # Loads data from S3 to Redshift
+│   │   │   ├── load_fact.py  # Populates fact table
+│   │   │   ├── load_dimension.py  # Populates dimension tables
+│   │   │   ├── data_quality.py  # Ensures data integrity
+│── create_tables.sql  # SQL script for table creation
+│── docker-compose.yaml  # Airflow setup
+│── set_connections_and_variables.sh  # Environment setup
+```
 
-    Python 3.7+
-    Docker (for local Airflow execution)
-    AWS CLI (to connect to S3 and Redshift)
+## **🚀 Installation & Setup**  
+### **1️⃣ Install Dependencies**  
+Ensure you have **Docker** and **AWS CLI** installed.
 
-🔹 Setup Environment
-🔹 Start Docker with Airflow
+```bash
+# Clone the repository
+git clone https://github.com/your-repo/DataPipelines.git
+cd DataPipelines
+```
 
+### **2️⃣ Set Up AWS Credentials**  
+Modify `set_connections_and_variables.sh` with your **AWS_ACCESS_KEY** and **AWS_SECRET_KEY**, then run:
+```bash
+bash set_connections_and_variables.sh
+```
+
+### **3️⃣ Start Apache Airflow**  
+Run Docker to start **Airflow UI**:
+```bash
 docker-compose up -d
+```
+Then, access the **Airflow UI** at:  
+[http://localhost:8080](http://localhost:8080)
 
-🔹 Set AWS Variables in Airflow
+### **4️⃣ Create Redshift Tables**  
+Manually execute:
+```sql
+\i create_tables.sql
+```
+Or run it from the **Query Editor in Redshift**.
 
-airflow connections add aws_credentials \
-    --conn-type aws \
-    --conn-extra '{"aws_access_key_id": "YOUR_ACCESS_KEY", "aws_secret_access_key": "YOUR_SECRET_KEY"}'
+### **5️⃣ Trigger the Pipeline in Airflow**  
+In the Airflow UI, trigger the DAG:  
+📍 DAG Name: `final_project`
 
-# 📂 Module Breakdown
+## **🔄 Workflow Execution**  
+```mermaid
+gantt
+title ETL Pipeline Execution
+dateFormat  HH:mm\section Staging
+S3 to Redshift  :done, 10:00, 10min
+\section Transform & Load
+Load Fact Table  :active, 10:10, 15min
+Load Dimension Tables :active, 10:25, 10min
+\section Validation
+Data Quality Check  :active, 10:35, 5min
+```
 
+## **📌 Data Model (Star Schema)**  
+```mermaid
+graph TD;
+    A[staging_events] -->|Transform| B[songplays (fact table)];
+    A[staging_songs] -->|Transform| B;
+    B --> C[users (dim)];
+    B --> D[songs (dim)];
+    B --> E[artists (dim)];
+    B --> F[time (dim)];
+```
 
-1️⃣ StageToRedshiftOperator
-
-📌 Loads JSON data from S3 into Redshift using COPY
-
-copy_sql = f"""
-    COPY {self.table}
-    FROM '{s3_path}'
-    IAM_ROLE '{self.iam_role}'
-    FORMAT AS JSON '{self.json_format}';
-"""
-
-2️⃣ LoadFactOperator
-
-📌 Loads data into the fact table
-
-INSERT INTO songplays (playid, start_time, userid, ...)
-SELECT DISTINCT md5(events.sessionid || events.start_time), ...
+## **🔍 SQL Queries Used in the Pipeline**  
+### **1️⃣ Fact Table: `songplays`**  
+```sql
+SELECT
+    md5(events.sessionid || events.start_time) AS songplay_id,
+    events.start_time,
+    events.userid,
+    events.level,
+    songs.song_id,
+    songs.artist_id,
+    events.sessionid,
+    events.location,
+    events.useragent
 FROM staging_events events
-LEFT JOIN staging_songs songs ON events.song = songs.title;
+LEFT JOIN staging_songs songs
+ON events.song = songs.title
+AND events.artist = songs.artist_name;
+```
 
-3️⃣ LoadDimensionOperator
+### **2️⃣ Dimension Table: `users`**  
+```sql
+SELECT DISTINCT userid, firstname, lastname, gender, level
+FROM staging_events
+WHERE page='NextSong';
+```
 
-📌 Supports truncate-insert
-
-if self.truncate_insert:
-    redshift.run(f"DELETE FROM {self.table}")
-redshift.run(self.sql_query)
-
-4️⃣ DataQualityOperator
-
-📌 Performs data integrity checks in Redshift
-
-for check in self.sql_checks:
-    sql_query, expected_value = check
-    records = redshift.get_records(sql_query)
-    if records[0][0] < expected_value:
-        raise ValueError(f"Test failed: {sql_query}")
-
-
-# 🔬 Testing & Debugging
-
-✅ Test Airflow DAG
-
-airflow tasks test final_project Stage_events 2024-02-01
-
-✅ Debug Logs
-
-docker logs -f airflow_scheduler
-
-✅ Verify Redshift
-
+## **📈 Monitoring & Debugging**  
+### **Check DAG Status**  
+```bash
+airflow dags list
+airflow dags trigger final_project
+airflow tasks list final_project
+airflow tasks test final_project Stage_events 2024-02-11
+```
+### **Check Redshift Data**  
+```sql
 SELECT COUNT(*) FROM songplays;
+SELECT * FROM songplays LIMIT 10;
+```
 
-# 🖥️ Expected Output
+## **📜 License**  
+This project is licensed under the **MIT License**.
 
-[INFO] StageToRedshiftOperator - Copying data from S3 to Redshift...
-[INFO] LoadFactOperator - Inserting data into fact table...
-[INFO] LoadDimensionOperator - Inserting data into dimension tables...
-[INFO] DataQualityOperator - Running data quality checks...
-[INFO] DAG Execution Completed Successfully!
+## **💡 Future Improvements**  
+✅ Automate table creation in Airflow  
+✅ Improve logging and monitoring with Airflow Metrics  
+✅ Extend pipeline with additional data sources  
 
-# 📈 Project Benefits
+---
 
-✅ Automation → The entire ETL process is managed by Airflow
-✅ Scalability → AWS Redshift handles large-scale data
-✅ Reliability → Data quality tests ensure integrity
-✅ Modularity → Easily extendable with new sources and transformations
-📌 Conclusion
+**Made with ❤️ using Apache Airflow & AWS Redshift** 🚀
 
-This project demonstrates how Apache Airflow can manage a complex data pipeline with AWS S3 and Redshift.
-The workflow automates data ingestion, transformation, and validation, enabling efficient analytics.
-
-# 🚀 Next Steps:
-
-    Integrate Amazon Athena for ad-hoc analysis
-    Optimize SQL queries for better performance
-    Build a dashboard with Amazon QuickSight to visualize data insights
-
-# 🔗 Useful Links
-
-    Apache Airflow Documentation
-    Amazon Redshift Best Practices
-    S3 Data Management
-
-# 🎯 Built with ❤️ for Sparkify 🎵
-Author: Riccardo Scaringi
-📅 Last Updated: February 2025
